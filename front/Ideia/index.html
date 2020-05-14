@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Module Render-->
+    <script>
+        require('./index.js')
+    </script>
+    <!-- Meta Dados-->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="index.css">
+    <title>Manager</title>
+</head>
+<body>
+    <!-- Barra de Navegação-->
+    <nav> 
+        <ul>
+            <li>
+                <a href="#graficos">Graficos</a>
+            </li>
+            <li>
+                <a href="#graficos">Barras</a>
+            </li>
+            <li>
+                <a href="#graficos">Portifolio</a>
+            </li>
+        </ul>
+    </nav>
+    
+    <!-- Graficos-->
+    <h1>Graficos</h1>
+    <div id="graficos">
+        <canvas id="graf1" width="200" height="100"></canvas>
+        <canvas id="graf2" width="200" height="100"></canvas>
+        <canvas id="graf3" width="200" height="100"></canvas>
+    </div>
+
+    <!-- Barras de progresso-->
+    <h1>Barras</h1>
+    <div id="barras">
+        <progress title="I'm a header of bar1" id="bar1" value="15" max="100"> 15% </progress>
+        <progress title="I'm a header of bar2" id="bar2" value="35" max="100"> 35% </progress>
+        <progress title="I'm a header of bar3" id="bar3" value="85" max="100"> 85% </progress>
+
+    </div>
+
+    <!-- Portifolio-->
+    <h1>Portifolio</h1>
+    <div id="portifolio">
+        <div id="port1">
+            <img>
+            <p>Text1</p>
+            <p>Text2</p>
+            <p>Text3</p>
+        </div>
+    </div>
+
+
+    <!-- Formulario Cadastro-->
+    <form>
+        <input type="text"/>
+        <input type="text"/>
+        <input type="button" value="ok"/>
+    </form>
+
+</body>
+</html>

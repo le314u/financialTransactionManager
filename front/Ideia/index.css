@@ -1,0 +1,40 @@
+@charset "UTF-8";
+
+* {
+    margin: 0px;
+    padding: 0px;
+}
+
+
+/* Barra de navegação */
+nav {
+    background-color: rgba(255, 0, 124, 0.5);
+}
+ul {
+    list-style-type : none;
+    overflow: hidden;
+}
+li {
+    float: left;
+    
+}
+li a {
+    display: block;
+    text-align: center;
+    padding: 25px;
+    text-decoration: none;
+}
+li a:hover {
+    background-color: rgba(255, 0, 124, 1);
+}
+
+
+/* Barra de progresso */
+progress {
+    display: block;
+}
+
+/* Graficos */
+canvas {
+    border:1px solid #000000;
+}

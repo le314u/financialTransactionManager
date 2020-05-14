@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <title>Juros</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="index.css">
+        <!-- Links Externos -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+    </head>
+
+    <body>
+        <div id="content">
+            <table  class='table'>
+                <tr>
+                    <td>Origem:</td><td> <input id="src" type="text" placeholder="Quem me deu o cheque?"><br></td>
+                </tr><tr>
+                    <td>Titular:</td><td> <input id="titular" type="text" placeholder="Quem é o Titular do cheque?"><br></td>
+                </tr><tr>
+                    <td>Nº Cheque:</td><td> <input id="num" type="text" placeholder="Qual o numero do cheque?"><br></td>
+                </tr><tr>
+                    <td>Banco:</td><td> <input id="bank" type="text" placeholder="Qual o banco?"><br></td>
+                </tr><tr>
+                    <td>Entrada:</td><td> <input id="inp" type="date" ><br></td>
+                </tr><tr>
+                    <td>Saida:</td><td> <input id="out" type="date" ><br></td>
+                </tr><tr>
+                    <td>Valor:</td><td> <input id="val" type="number" placeholder="Valor do cheque?"><br></td>
+                </tr><tr>
+                    <td>Taxa:</td><td> <input id="per" type="number" placeholder="Porcentagem"><brr></td>
+                </tr>
+                <tr>
+                    <td></td><td> <input id="calcular" type="button" value="Calcular" ></td>            
+                </tr>
+            </table>
+        </div>
+        <div id="buttons" hidden="true">
+            <table  class='table'>
+                <tr>
+                    <td>
+                        <button id="register">Registrar Evento</button>
+                    </td>
+                    <td>
+                        <button onclick="window.location.reload(1);">Recalcular</button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        
+        <script type="text/javascript" src="./index.js"></script>
+        <!--Depois que carrega a pagina preenche a entrada automaticamente-->
+        <script type="text/javascript"> 
+            data = new Date(Date.now());//Data atual
+            ano = data.getFullYear()
+            mes = parseInt(data.getMonth()+1) <10 ? "0"+parseInt(data.getMonth()+1):parseInt(data.getMonth()+1)
+            dia = data.getDate()
+            strData = ""+ano+"-"+mes+"-"+dia //Parse Data
+            document.getElementById("inp").value = strData
+            document.getElementById("out").value = strData
+        </script>
+
+        
+
+    </body>
+</html>

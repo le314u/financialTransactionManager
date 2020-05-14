@@ -1,0 +1,25 @@
+{
+  "name": "juros_calendar",
+  "version": "1.0.0",
+  "description": "Cria anotaçoes no google calendario relacionado a movimentações financeiras",
+  "main": "index.js",
+  "author": "Lucas Mateus Fernandes",
+  "license": "ISC",
+  "dependencies": {
+    "sqlite3": "^ 4.2.0",
+    "googleapis": "^39.2.0"
+  },
+  "scripts": {
+    "postinstall": "install-app-deps",
+    "test": "standard && node main.js",
+    "start": "electron .",
+    "standart": "standard --fix"
+  },
+  "devDependencies": {
+    "electron": "^8.2.5",
+    "electron-builder": "^22.6.0",
+    "googleapis": "^39.2.0",
+    "lint": "^0.7.0",
+    "standard": "^14.3.4"
+  }
+}
