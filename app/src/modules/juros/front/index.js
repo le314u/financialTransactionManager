@@ -191,7 +191,7 @@ register.addEventListener('click', ()=>{
 
     let descricao = `No dia ${nameSpace['Entrada']} houve um cheque ${nameSpace['Numero']} do ${nameSpace['Banco']} repassado por ${nameSpace['Origen']} sendo o titular ${nameSpace['Titular']} para retirada em ${nameSpace['Saida']}`
     console.log()
-    let saida = nameSpace['Entrada'].split('/')
+    let saida = nameSpace['Saida'].split('/')
     let args={
         'nomeEvento':   'Cheque',
         'descricao':    descricao,
