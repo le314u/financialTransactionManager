@@ -123,7 +123,9 @@ module.exports = class Calendar{
       }, (err, res) => {
         if (err) {
           console.error('The API returned an error:createEvent ' + err)
-          reject(err)
+          // Loop Até ser aceito
+          this.createEvent(nome, descricao, dia, mes, ano)
+          //reject(err)
         } else {
           resolve(res)
         }
