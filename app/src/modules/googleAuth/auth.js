@@ -11,82 +11,91 @@ const FILE_CREDENTIALS = 'credentials.json'
 module.exports = class Auth{
   constructor(){ 
     this.authSpace = {
+      credentialsJSON: null,
       oAuth2Client: null,
-      credentials: null
+      url: ''
     }
-    this.#getCredentials().then(()=>{
+
+    //Le as Credentiais do App
+    this.#getCredentials()
+    .then(()=>{
+      //Prepara o cliente oAuth2 
       this.#createClienteOauth2()
-    })
+    }).catch()
+
   };
 
-  // Retorna um JSON com as credenciais
+  // Retorna um JSON com as credenciais // Lida de um arquivo
   #getCredentials = () => {
     return new Promise( (resolve, reject) => {
       //Le o Arquivo e retorna JSON com as credenciais
       fs.readFile('app/src/modules/googleAuth/'+FILE_CREDENTIALS, (err, content) => {
         if (err) {
-          console.log('Erro ao carregar o arquivo de credenciais do cliente');
-          console.log(err);
+          console.error('Erro ao carregar o arquivo de credenciais do cliente',err);
           reject(err);
         } else {
-          //Transforma o conteudo do arquivo em um Objeto JSON
-          let credentialsJSON = JSON.parse(content);
-          this.authSpace.credentials = credentialsJSON;
+          // Transforma o conteudo do arquivo em um Objeto JSON
+          let credentialsJSON = JSON.parse(content)
+          // Transforma a credencial em um atributo da classe
+          this.authSpace.credentialsJSON = credentialsJSON
           resolve(credentialsJSON);
         }
       });
     })
   };
 
-  // Cria um cliente oAuth2 com as credenciais
+  // Prepara um cliente oAuth2 
   #createClienteOauth2 = () => {
-    // Pega os 3 campos do objeto Json
-    const { client_secret, client_id, redirect_uris } = this.authSpace.credentials.installed
-    // Gera a autorização
+    // cria o cliente oAuth2
+    let { client_secret, client_id, redirect_uris } = this.authSpace.credentialsJSON.installed
     const oAuth2Client = new google.auth.OAuth2(
       client_id,
       client_secret,
       redirect_uris[0]
     )
-    
-    this.authSpace.oAuth2Client = oAuth2Client;
+    // Seta a url de geração de codigo
+    this.authSpace.url = oAuth2Client.generateAuthUrl({
+      access_type: 'offline',
+      scope: SCOPES
+    })
+    // Configurando autenticação global
+    google.options({
+      auth: oAuth2Client
+    });
+    this.authSpace.oAuth2Client = oAuth2Client
     return oAuth2Client
   };
 
-  // Cria um token de acordo com o codigo gerado
+  // Cria um token de acordo com o codigo de Autorização
   #createTokenAuth = (code) => {
-    //Alias
-    let oAuth2Client = this.authSpace.oAuth2Client
     //Cria um token de autentificação
     return new Promise( (resolve, reject) => {
-      oAuth2Client.getToken(code, (err, token) => {
+      this.authSpace.oAuth2Client.getToken(code, (err, tokenJSON) => {
         if (err) {
-          console.error('Erro no token de acesso', err, '\n')
+          console.error('Erro no token de autorização:', err)
           reject(false)
         } else {
-          resolve(token)
+          // Retorna o Token de autorização
+          resolve(tokenJSON)
         }
       })
     })
   }
 
-  #persistToken = (id_user, jsonToken) => {
-    // Converte o Token em uma string
-    const strToken = JSON.stringify(jsonToken)
-    // Armazena o token no Bd 
-    userMgr.addToken(id_user, strToken)
+  //Salva o Token Refresh no Bd
+  #persisteToken = (id_user, strCode) => {
+    // Armazena o token_refresh no Bd 
+    userMgr.addToken(id_user, strCode)
   };
-
-  // Retorna o token de acesso
-  #getToken = (id_user) => {
+  
+  // Retorna o token de atualização do $id_user
+  #getTokenRefresh = (id_user) => {
     return new Promise((resolve, reject) => {
-      // Verifica se existe um token no BD
+      // Verifica se existe um token Salvo
       userMgr.getToken(id_user)
-      .then((token)=>{// Caso o token ja exista
-        if(token.length > 2){
-          // Converte string em JSON
-          let jsonToken = JSON.parse(token)
-          resolve(jsonToken)
+      .then((token)=>{
+        if(token !== userBD.NOT_TOKEN){
+          resolve(token)
         } else {
           reject(false)
         }
@@ -94,62 +103,48 @@ module.exports = class Auth{
     })
   };
 
-  #setToken = (jsonToken) => {
-    //Alias
-    let oAuth2Client = this.authSpace.oAuth2Client
+  // Seta o Token no cliente oAuth2
+  #setToken = (token_refresh) => {
     // Seta as credenciais no cliente oAuth2Cliente
-    oAuth2Client.setCredentials(jsonToken)
-    return oAuth2Client
+    return this.authSpace.oAuth2Client.setCredentials ({ 
+      refresh_token : token_refresh
+    })
+  };
+  
+  // Salva o token de autualização no bd
+  saveAuthorizationCode = (code, nameSpace) => {
+    return new Promise( (resolve, reject) => {
+      // Cria um token de acordo com o codigo
+      this.#createTokenAuth(code)
+      .then(({refresh_token})=>{
+        // Persiste o Token no BD
+        this.#persisteToken(nameSpace.id_user, refresh_token)
+        resolve(true)
+      }).catch(reject)
+    })
   };
 
   // Retorna uma url para authenticar
   getURL = () => {
-    //Alias
-    let oAuth2Client = this.authSpace.oAuth2Client
-    // Gera uma URL de autenticação
-    const authUrl = oAuth2Client.generateAuthUrl({
-      access_type: 'offline',
-      scope: SCOPES
-    })
-    return authUrl;
+    return this.authSpace.url
   };
 
-  // Retorna clienteAuth2
-  authorizationId_User = (nameSpace) => {
-    return new Promise( (resolve, reject) => {
-      // Verifica se existe um token salvo no Bd
-      this.#getToken(nameSpace.id_user)
-      .then( (jsonToken) => {
-        return this.#setToken(jsonToken)
-      })
-      .then( (oAuth2Client) => {
-        // Seta o oAuth2 client
-        console.log(nameSpace)
-        nameSpace.oAuth2Client = oAuth2Client
-        resolve(true)
-      })
-      .catch(reject)
-    })
-  }
 
-  // Retorna clienteAuth2
-  authorizationCode = (code, nameSpace) => {
+  // Retorna clienteAuth2 com authorização
+  authorization = (nameSpace) => {
     return new Promise( (resolve, reject) => {
-      // Cria um token de acordo com o codigo gerado
-      this.#createTokenAuth(code) 
-      .then( (tokenJSON) => {
-        // Persiste o Token no BD
-        this.#persistToken(nameSpace.id_user, tokenJSON )
-        // Seta o Token
-        return this.#setToken( tokenJSON )
+      // Pega o toke de atualização do $id_user
+      this.#getTokenRefresh(nameSpace.id_user)
+      .then( (token) => {
+        return this.#setToken(token)
       })
-      .then( (oAuth2Client) => {
-        // persiste o cliente oAuth2Client
-        nameSpace.oAuth2Client = oAuth2Client
-        resolve(true)
+      .then( (token_refresh) => {
+        resolve(this.authSpace.oAuth2Client)
       })
-      .catch(reject)
+      .catch( reject )
     })
-  }
+
+  };
+
 
 }

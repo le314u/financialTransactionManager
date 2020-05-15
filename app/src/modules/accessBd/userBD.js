@@ -9,6 +9,7 @@ TABLE.token = 'token'
 Object.freeze(TABLE)
 
 module.exports = class User {
+  static NOT_TOKEN = "Not_Def"
   constructor () {
     this.dbManager = new db()
     this.table = this.dbManager.openDb('user.db')
@@ -37,7 +38,7 @@ module.exports = class User {
       //Verifica sqlInjection
       this.dbManager.hasInjections([user, pwd], reject)
       // Add o Player no Bd
-      const code = `INSERT INTO ${TABLE.nameTable} (${TABLE.user}, ${TABLE.pwd}, ${TABLE.token}) VALUES ('${user}', '${pwd}', '');`
+      const code = `INSERT INTO ${TABLE.nameTable} (${TABLE.user}, ${TABLE.pwd}, ${TABLE.token}) VALUES ('${user}', '${pwd}', '${User.NOT_TOKEN}');`
       this.dbManager.comandDb(this.table, code)
         .then((add) => {
           resolve(true)

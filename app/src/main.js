@@ -29,7 +29,7 @@ module.exports = class Main{
 
     // Quando a tela do Aplicativo é Desfocada
     app.on('browser-window-blur', () => {
-      console.log('Segundo Plano')
+      console.error('Segundo Plano')
     })
   }
   

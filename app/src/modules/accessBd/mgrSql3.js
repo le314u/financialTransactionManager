@@ -11,7 +11,7 @@ module.exports = class Db {
       if (err) {
         console.error('Erro Criação:' + err.message)
       } else {
-        // console.log('Conexao estabelecida com ' + name);
+        console.warn('Conexao estabelecida com ' + name);
       }
     })
   };
@@ -23,7 +23,7 @@ module.exports = class Db {
           console.error(err.message)
           reject(false)
         } else {
-          console.log('Fecha a Conexão com o banco de dados')
+          console.warn('Fecha a Conexão com o banco de dados')
           resolve(true)
         }
       })
@@ -32,7 +32,7 @@ module.exports = class Db {
 
  
   comandDb (dataBase, strCode) {
-    if (debug) { console.log(strCode) }
+    if (debug) { console.warn(strCode) }
     return new Promise((resolve, reject) => {
       return dataBase.run(strCode, (err) => {
         if (err) {
@@ -45,7 +45,7 @@ module.exports = class Db {
   };
 
   searchDb (dataBase, strCode, callBack) {
-    if (debug) { console.log(strCode) }
+    if (debug) { console.warn(strCode) }
     return new Promise((resolve, reject) => {
       return dataBase.get(strCode, (err, instRow) => {
         if (err) {
@@ -58,7 +58,7 @@ module.exports = class Db {
   };
 
   searchies (dataBase, strCode, callBack) {
-    if (debug) { console.log(strCode) }
+    if (debug) { console.warn(strCode) }
     return new Promise((resolve, reject) => {
       dataBase.all(strCode, (err, instRows) => {
         if (err) {

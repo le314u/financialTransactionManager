@@ -46,7 +46,7 @@ module.exports = class Login{
         this.#login(user, pwd)
       })
       .catch(()=>{
-        console.log("Ja existe")
+        console.warn("Ja existe")
       })
     })
 

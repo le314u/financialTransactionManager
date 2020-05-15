@@ -11,7 +11,7 @@ function getArgs () {
 // Ao clicar no #auth envia dados para processMain
 const login = document.getElementById('auth')
 login.addEventListener('click', () => {
-  ipcRenderer.send('setToken_page_auth', getArgs())
+  ipcRenderer.send('googleAuth_setToken', getArgs())
 })
 
 // Listenen para mostrar o url na tela

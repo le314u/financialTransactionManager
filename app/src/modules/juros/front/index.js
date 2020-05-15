@@ -3,6 +3,8 @@ const DEF_ANO = 0
 const DEF_MES = 1
 const DEF_DIA = 2
 
+let nameSpace = {}
+
 function valid(entrada,saida){
 //Verifica se as Datas são validas
     //Ano Entrada > Saida?
@@ -119,19 +121,20 @@ function table(origen, titular, numero, banco, valor, entrada, saida, taxa, dias
 }
 
 function json(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total){
-    return "{"+
-        "'Origem':'"    +origen+    "',"+
-        "'Titular':'"   +titular+   "',"+
-        "'Numero':'"    +numero+    "',"+
-        "'Banco':'"     +banco+     "',"+
-        "'Valor':'"     +valor+     "',"+
-        "'Entrada':'"   +entrada+   "',"+
-        "'Saida':'"     +saida+     "',"+
-        "'Taxa':'"      +taxa+      "',"+
-        "'Tempo':'"     +dias+      "',"+
-        "'Juros':'"     +juros+     "',"+
-        "'Repassar':'"  +repasse+   "',"+
-        "'Total':'"     +total+     "'}"
+    return `{
+        "Origem":    "${origen}",
+        "Titular":   "${titular}",
+        "Numero":    "${numero}",
+        "Banco":     "${banco}",
+        "Valor":     "${valor}",
+        "Entrada":   "${entrada}",
+        "Saida":     "${saida}",
+        "Taxa":      "${taxa}",
+        "Tempo":     "${dias}",
+        "Juros":     "${juros}",
+        "Repassar":  "${repasse}",
+        "Total":     "${total}"   
+    }`
 }
 
 function txt(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total){
@@ -158,13 +161,12 @@ function print(origen,titular,numero,banco,valor,entrada,saida,taxa,dias,juros){
     repasse = valor - juros
     total = juros+valor
 
-    //SEND_Whats = '<a href="'+geraURL([JSON])+'"><button>Compartilhar via Whats</button></a>'
-    //JSON = json(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
-    //REFRESH_Pagina = '<button onclick="window.location.reload(1);">Recalcular</button></a>'
+    let strJSON = json(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
+    nameSpace = JSON.parse(strJSON);
         
     let TABLE = table(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
-    let JSON = json(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
-    let TXT = txt(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
+    //let JSON = json(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
+    //let TXT = txt(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
         
     //Troca a tabela
     let content = document.getElementById("content")
@@ -176,6 +178,7 @@ function print(origen,titular,numero,banco,valor,entrada,saida,taxa,dias,juros){
 }
 
 
+
 //Cria Evento Para os buttons
 let calc = document.getElementById("calcular");
 calc.addEventListener('click',calcular);
@@ -185,12 +188,18 @@ const {ipcRenderer} = require("electron");
 
 const register = document.getElementById("register");
 register.addEventListener('click', ()=>{
+
+    let descricao = `No dia ${nameSpace['Entrada']} houve um cheque ${nameSpace['Numero']} do ${nameSpace['Banco']} repassado por ${nameSpace['Origen']} sendo o titular ${nameSpace['Titular']} para retirada em ${nameSpace['Saida']}`
+    console.log()
+    let saida = nameSpace['Entrada'].split('/')
     let args={
-        'nomeEvento':'Cheque',
-        //'descricao':'No dia '+entrada+' houve um cheque '+numero+' do '+banco+' repassado por '+origen+' sendo o titular '+titular+' para retirada em '+saida,
-        'dia':"saida[0]",
-        'mes':"saida[1]",
-        'ano':"saida[2]"
+        'nomeEvento':   'Cheque',
+        'descricao':    descricao,
+        'dia':  saida[0],
+        'mes':  saida[1],
+        'ano':  saida[2]
     }
-    ipcRenderer.send("autentication",args);
+    ipcRenderer.send("juros_register_calendar",args);
+    // Recarrega a pagina
+    window.location.reload(1)
 });

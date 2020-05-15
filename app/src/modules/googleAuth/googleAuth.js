@@ -18,9 +18,13 @@ module.exports = class Login{
     let switchPages = this.authSpace.switchPages
     let nameSpace = this.authSpace.nameSpace
     // Seta Token de authentication
-    ipcMain.on('setToken_page_auth', (event, args) => {
-      const { token } = args
-      auth.authorizationCode(token, nameSpace)
+    ipcMain.on('googleAuth_setToken', (event, args) => {
+      const { token } = args // código de autorização
+      auth.saveAuthorizationCode(token, nameSpace)
+      .then( ()=>{
+        // Seta o token no cliente oAuth2
+        return auth.authorization(nameSpace)
+      })
       .then( ()=>{
         // Avisa ao controller que o cliente oAuth foi criado
         switchPages.emit('auth')
@@ -34,7 +38,7 @@ module.exports = class Login{
     // Cria um alias 
     let ipcMain = this.authSpace.ipcMain
     // Remove Listeners
-    ipcMain.removeAllListeners('setToken_page_auth')
+    ipcMain.removeAllListeners('googleAuth_setToken')
   };
 
   // Carrega o front no BrowserWindow e cria os canais de comunicação
@@ -53,14 +57,16 @@ module.exports = class Login{
     this.#removeListenner()
   };
 
-  // Verifica se o usuário ja é authentificado
-  hasAuthorization = (nameSpace) => {
-    return auth.authorizationId_User(nameSpace)
-    .then( ()=>{
-      return true
-    })
-    .catch( ()=>{
-      return false
+  // Retorna a autorização
+  getAuthorization = (nameSpace) => {
+    return new Promise((resolve, reject) => {
+      auth.authorization(nameSpace)
+      .then((cliente)=>{
+        resolve(cliente)
+      })
+      .catch(()=>{
+        reject(false)
+      })
     })
   }
 }

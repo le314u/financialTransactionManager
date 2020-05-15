@@ -5,7 +5,6 @@ const login = require('./login/login.js');
 const juros = require('./juros/juros.js');
 const google_auth = require('./googleAuth/googleAuth.js');
 
-
 module.exports = class SwitchPages extends EventEmitter{
   constructor({view}){
     super()
@@ -13,11 +12,14 @@ module.exports = class SwitchPages extends EventEmitter{
     // Estado
     this.nameSpace = {
       id_user: 0,
+      idCalendar: 0,
       oAuth2Client: null
     }
     // Carrega todas as paginas
     this.#loadPageModules();
     this.#addListenner();
+    // Inicia a View com a Pagina de Login do App
+    this.page_login.switchPageOn(this.view);
   }
 
   // Carrega todos os modulos do front
@@ -25,8 +27,6 @@ module.exports = class SwitchPages extends EventEmitter{
     this.page_login = new login(ipcMain, this);
     this.page_juros = new juros(ipcMain, this);
     this.page_google_auth = new google_auth(ipcMain, this);
-    // Mostra a Pagina de Login
-    this.page_login.switchPageOn(this.view);
   };
 
   // Cria um canal de comunicação entre Controller e os Page Modules
@@ -37,30 +37,28 @@ module.exports = class SwitchPages extends EventEmitter{
       // Encerra a comunicação da Pagina
       this.page_login.switchPageOff(this.view);
       // Verifica qual a proxima pagina
-      this.page_google_auth.hasAuthorization(this.nameSpace) 
-      .then((q)=>{
-        console.log(q)
-        //Carrega a proxima pagina
+      this.page_google_auth.getAuthorization(this.nameSpace) 
+      .then((oAuth2Client)=>{
+        this.nameSpace.oAuth2Client = oAuth2Client
+        //Carrega a pagina de Juros
         this.page_juros.switchPageOn(this.view);
       })
       .catch(()=>{
-        //Carrega a proxima pagina
+        //Carrega a pagina de Autorização do googleApi
         this.page_google_auth.switchPageOn(this.view);
       })
-        
-      
-      
     })
 
-    // Quando é dada permissão para o App
+    // Quando é dada autorização para o App
     this.on('auth', () => {
-      //Encerra a comunicação da Pagina
-      this.page_google_auth.switchPageOff(this.nameSpace);
-      //Carrega a proxima pagina
-      this.page_juros.switchPageOn(this.view);
+      this.page_google_auth.getAuthorization(this.nameSpace)
+      .then((oAuth2Client)=>{
+        this.nameSpace.oAuth2Client = oAuth2Client
+        //Encerra a comunicação da Pagina
+        this.page_google_auth.switchPageOff(this.nameSpace);
+        //Carrega a proxima pagina
+        this.page_juros.switchPageOn(this.view);
+      }).catch()
     })
-
   };
-
 }
-
