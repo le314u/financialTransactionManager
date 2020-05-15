@@ -1,10 +1,27 @@
 @charset "UTF-8";
 
 * {
+    overflow: hidden;  
     margin: 0px;
     padding: 0px;
 }
 
-.oneLine {
-    display: block;
+form {
+    padding-left: 30%;
+    padding-right: 30%;
+    padding-top: 25%;
+}
+
+input{
+    width: 100%;
+}
+ 
+.oneline {
+    overflow: hidden;  
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.buttons {
+    display: flex;
 }
