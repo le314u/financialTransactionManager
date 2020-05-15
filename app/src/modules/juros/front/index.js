@@ -160,15 +160,14 @@ function print(origen,titular,numero,banco,valor,entrada,saida,taxa,dias,juros){
     juros = truc(parseFloat(juros))
     repasse = valor - juros
     total = juros+valor
+    let TABLE = table(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
 
     let strJSON = json(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
     nameSpace = JSON.parse(strJSON);
+    nameSpace.JSON = strJSON;
+    nameSpace.TXT = txt(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
         
-    let TABLE = table(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
-    //let JSON = json(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
-    //let TXT = txt(origen, titular, numero, banco, valor, entrada, saida, taxa, dias, juros, repasse, total);
-        
-    //Troca a tabela
+    //Troca o conteudo da tabela
     let content = document.getElementById("content")
     content.innerHTML = TABLE
 
@@ -188,13 +187,14 @@ const {ipcRenderer} = require("electron");
 
 const register = document.getElementById("register");
 register.addEventListener('click', ()=>{
-
+    const LINHA = '\n------------------\n'
+    console.log(nameSpace)
     let descricao = `No dia ${nameSpace['Entrada']} houve um cheque ${nameSpace['Numero']} do ${nameSpace['Banco']} repassado por ${nameSpace['Origen']} sendo o titular ${nameSpace['Titular']} para retirada em ${nameSpace['Saida']}`
-    console.log()
+    console.log(nameSpace.JSON)
     let saida = nameSpace['Saida'].split('/')
     let args={
-        'nomeEvento':   'Cheque',
-        'descricao':    descricao,
+        'nomeEvento':   'Cheque'+ nameSpace['Valor'],
+        'descricao':    descricao + LINHA + nameSpace.TXT + LINHA + nameSpace.JSON,
         'dia':  saida[0],
         'mes':  saida[1],
         'ano':  saida[2]
