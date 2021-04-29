@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <title>Juros</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <!-- Links Externos -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+        <!-- JS -->
+        <script type="text/javascript">
+            //DEFINE
+            const DEF_ANO = 0
+            const DEF_MES = 1
+            const DEF_DIA = 2
+
+            function valid(entrada,saida){
+            //Verifica se as Datas são validas
+                //Ano Entrada > Saida?
+                if( entrada[DEF_ANO] > saida[DEF_ANO] ){
+                    alert("Ano entrada invalido")
+                    return false
+                }else{
+                    //Mes Entrada > Saida?
+                    if( entrada[DEF_MES] > saida[DEF_MES] ){
+                        if( entrada[DEF_ANO] == saida[DEF_ANO] ){//So da errado se o ano for igual
+                            alert("Mes entrada invalido")
+                            return false
+                        }
+                    }else{
+                        //Dia Entrada > Saida?
+                        if( entrada[DEF_DIA] > saida[DEF_DIA] ){
+                            if( entrada[DEF_ANO] == saida[DEF_ANO] ){//So da errado se o ano for igual
+                                if( entrada[DEF_MES] == saida[DEF_MES] ){//So da errado se o mes for igual
+                                    alert("Dia entrada invalido")
+                                    return false
+                                }
+                            }
+                        }
+                    }
+                }
+                return true
+            }
+
+            function totalDias(entrada,saida){       
+            //Verifica quantos dias corridos
+            
+                let dataEntrada = new Date((entrada[DEF_ANO]),(entrada[DEF_MES]-1),(entrada[DEF_DIA]),12,00);
+                let dataSaida = new Date((saida[DEF_ANO]),(saida[DEF_MES]-1),(saida[DEF_DIA]),12,00);
+
+                const seg = 1000
+                const min = 60
+                const hora = 60
+                const dia = 24
+                
+                let totalDias = (new Date(dataSaida-dataEntrada).getTime()/seg/min/hora/dia) // Contabiliza o amior < o menor
+                totalDias += 1;
+                       
+                return (totalDias)
+            }
+
+            function juros(taxa, montante, dias){
+            //Calcula o valor dos juros de acordo com o montante os dias e a taxa
+                taxaDEC = taxa/100
+                lucroDiario = (montante*taxaDEC)/30
+                lucroTotal = (lucroDiario*dias)
+                return lucroTotal
+            }
+
+            function data2str(data){
+            //Converte o value do input em uma string dia/mes/ano
+                return ""+data[DEF_DIA] +"/"+ data[DEF_MES] +"/"+ data[DEF_ANO]
+            }
+
+            function calcular(){
+                //Pega Datas do input
+                let entrada = document.getElementById("inp").value.split("-");
+                let intEntrada = entrada.map(Number)
+                let saida = document.getElementById("out").value.split("-");
+                let intSaida = saida.map(Number)
+
+                if(valid(intEntrada,intSaida)){
+                    let origen = document.getElementById("src").value;
+                    let valor = document.getElementById("val").value;
+                    let taxa = document.getElementById("per").value;
+                    let titular = document.getElementById("titular").value;
+                    let numero = document.getElementById("num").value;
+                    let banco = document.getElementById("bank").value;
+                    let dias = totalDias(entrada,saida);
+                    let jurosTotal = juros(taxa, valor, dias)
+                    
+                    let strEntrada = data2str(intEntrada)
+                    let strSaida = data2str(intSaida)
+                    print(origen,titular,numero,banco,valor,strEntrada,strSaida,taxa,dias,jurosTotal)
+                }
+            }
+
+            function truc(valor){
+            //Trunca o valor para 2 casas decimais (referente aos centavos centavos)
+                return(Math.trunc(valor * 100)/100)
+            }
+
+            function geraURL(vetParametros){
+                url='whatsapp://send?text='
+                for(const txt of vetParametros) {
+                    url += encodeURIComponent(txt);
+                }
+                return url
+            }
+
+            function print(origen,titular,numero,banco,valor,entrada,saida,taxa,dias,juros){
+            //Reescreve a pagina
+                valor = truc(parseFloat(valor))
+                juros = truc(parseFloat(juros))
+                repasse = valor - juros
+                total = juros+valor
+                
+                URL_Conteudo_json = "{"+
+                    "'Origem':'"    +origen+    "',"+
+                    "'Titular':'"   +titular+   "',"+
+                    "'Numero':'"    +numero+    "',"+
+                    "'Banco':'"     +banco+     "',"+
+                    "'Valor':'"     +valor+     "',"+
+                    "'Entrada':'"   +entrada+   "',"+
+                    "'Saida':'"     +saida+     "',"+
+                    "'Taxa':'"      +taxa+      "',"+
+                    "'Tempo':'"     +dias+      "',"+
+                    "'Juros':'"     +juros+     "',"+
+                    "'Repassar':'"  +repasse+   "',"+
+                    "'Total':'"     +total+     "'}"
+
+                URL_Conteudo_txt = "\n'''"+
+                    "Origem:"       +origen+        "\n"+
+                    "Titular:"      +titular+       "\n"+
+                    "Numero:"       +numero+        "\n"+
+                    "Banco:"        +banco+         "\n"+
+                    "Valor:R$"      +valor+         "\n"+
+                    "Entrada:"      +entrada+    "\n"+
+                    "Saida:"        +saida+      "\n"+
+                    "Taxa:"         +taxa+          "%\n"+
+                    "Tempo:"        +dias+          "dias\n"+
+                    "Juros:R$"      +juros+         "\n"+
+                    "Repasse:R$"    +repasse+       "\n"+
+                    "Total:R$"      +total+         "\n"+
+                    "''''"
+                LINHA = "\n__________________\n"
+                
+                TABLE_Conteudo = ""+
+                    "<table class='table'>"+
+                        "<tr><td >Origem:</td><td>"     +origen+        "</td></tr>"+
+                        "<tr><td >Titular:</td><td>"    +titular+       "</td></tr>"+
+                        "<tr><td >Numero:</td><td>"     +numero+        "</td></tr>"+
+                        "<tr><td >Banco:</td><td>"      +banco+         "</td></tr>"+
+                        "<tr><td >Valor:</td><td>R$"    +valor+ "       </td></tr>"+
+                        "<tr><td >Entrada:</td><td>"    +entrada+    "</td></tr>"+
+                        "<tr><td >Saida:</td><td>"      +saida+      "</td></tr>"+   
+                        "<tr><td >Taxa:</td><td>"       +taxa+          "%</td></tr>"+
+                        "<tr><td >Tempo:</td><td>"      +dias+          "dias</td></tr>"+
+                        "<tr><td >Juros:</td><td>R$"    +juros+         "</td></tr>"+
+                        "<tr><td >Repasse:</td><td>R$"  +repasse+       "</td></tr>"+
+                        "<tr><td >Total:</td><td>R$"    +total+         "</td></tr>"+
+                    "</table>"
+
+                SHARE_Whats = ""+
+                    '<a href="'+geraURL([URL_Conteudo_txt,LINHA,URL_Conteudo_json])+'"><button>Compartilhar via Whats</button></a>'
+                
+                REFRESH_Pagina = ""+
+                    '<button onclick="window.location.reload(1);">Recalcular</button></a>'
+
+                document.body.innerHTML=TABLE_Conteudo+SHARE_Whats+REFRESH_Pagina
+            }
+
+        </script>
+    </head>
+
+    <body>
+        <table class='table'>
+            <tr>
+                <td>Origem:</td><td> <input id="src" type="text" placeholder="Quem me deu o cheque?"><br></td>
+            </tr><tr>
+                <td>Titular:</td><td> <input id="titular" type="text" placeholder="Quem é o Titular do cheque?"><br></td>
+            </tr><tr>
+                <td>Nº Cheque:</td><td> <input id="num" type="text" placeholder="Qual o numero do cheque?"><br></td>
+            </tr><tr>
+                <td>Banco:</td><td> <input id="bank" type="text" placeholder="Qual o banco?"><br></td>
+            </tr><tr>
+                <td>Entrada:</td><td> <input id="inp" type="date" ><br></td>
+            </tr><tr>
+                <td>Saida:</td><td> <input id="out" type="date" ><br></td>
+            </tr><tr>
+                <td>Valor:</td><td> <input id="val" type="number" placeholder="Valor do cheque?"><br></td>
+            </tr><tr>
+                <td>Taxa:</td><td> <input id="per" type="number" placeholder="Porcentagem"><brr></td>
+            </tr>
+        </table>
+        <input id="ok" type="button" value="Ok" onclick="calcular()">
+
+        <script type="text/javascript"> 
+            data = new Date(Date.now());//Data atual
+            ano = data.getFullYear()
+            mes = parseInt(data.getMonth()+1) <10 ? "0"+parseInt(data.getMonth()+1):parseInt(data.getMonth()+1)
+            dia = data.getDate()
+            strData = ""+ano+"-"+mes+"-"+dia //Parse Data
+            document.getElementById("inp").value = strData
+        </script>
+    </body>
+</html>
