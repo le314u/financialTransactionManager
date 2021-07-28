@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt">
+    <head>
+        <title>Juros</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css">
+        <!-- Links Externos -->
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js"></script>
+        <!-- JS -->
+        <script type="text/javascript">
+
+
+// https://mundoeducacao.uol.com.br/matematica/tabela-price.htm
+
+
+
+
+function prestacao(pv,n,i){
+    // pv = presente valor
+    // p = prestação
+    // n = número de parcelas
+    // i = taxa de juros na forma unitária, isto é, i / 100 (1,5/100 =  // 0,015)
+    let p = pv*( (((1+i)**n)*i)   /  (((1+i)**n)-1) )
+    return p
+}
+
+function juros(pv,i){
+    // pv = presente valor
+    // i = taxa de juros na forma unitária, isto é, i / 100 (1,5/100 =  // 0,015)
+    return pv*i
+}
+
+function saveMes( mes, divida, juros, amortizado, valorMensal){
+    return {
+        'mes':mes,
+        'divida':parseFloat(divida).toFixed(2),
+        'juros':parseFloat(juros).toFixed(2),
+        'amortizado':parseFloat(amortizado).toFixed(2),
+        'parcela':parseFloat(valorMensal).toFixed(2)
+    }
+}
+
+function calcPrice (valorInit,qtdMeses,taxaMensal){
+    let divida = valorInit
+    let valorMensal = prestacao(divida, qtdMeses, taxaMensal)
+    let pagamentos = []
+    let totalPago = 0
+    for (let i = 0; i < qtdMeses; i++) {
+        totalPago = totalPago + valorMensal
+        let jurosMes = juros(divida, taxaMensal)
+        divida = divida - prestacao(divida, qtdMeses, taxaMensal)
+        pagamentos.push(saveMes( i+1, divida, jurosMes, totalPago ,valorMensal ))
+    }
+    return pagamentos
+}
+
+
+
+//DEFINE
+const DEF_ANO = 0
+const DEF_MES = 1
+const DEF_DIA = 2
+
+function valid(entrada,saida){
+//Verifica se as Datas são validas
+    //Ano Entrada > Saida?
+    if( entrada[DEF_ANO] > saida[DEF_ANO] ){
+        alert("Ano entrada invalido")
+        return false
+    }else{
+        //Mes Entrada > Saida?
+        if( entrada[DEF_MES] > saida[DEF_MES] ){
+            if( entrada[DEF_ANO] == saida[DEF_ANO] ){//So da errado se o ano for igual
+                alert("Mes entrada invalido")
+                return false
+            }
+        }else{
+            //Dia Entrada > Saida?
+            if( entrada[DEF_DIA] > saida[DEF_DIA] ){
+                if( entrada[DEF_ANO] == saida[DEF_ANO] ){//So da errado se o ano for igual
+                    if( entrada[DEF_MES] == saida[DEF_MES] ){//So da errado se o mes for igual
+                        alert("Dia entrada invalido")
+                        return false
+                    }
+                }
+            }
+        }
+    }
+    return true
+}
+
+function totalMeses(entrada,saida){       
+//Verifica quantos dias corridos
+
+    let dataEntrada = new Date((entrada[DEF_ANO]),(entrada[DEF_MES]-1),(entrada[DEF_DIA]),12,00);
+    let dataSaida = new Date((saida[DEF_ANO]),(saida[DEF_MES]-1),(saida[DEF_DIA]),12,00);
+
+    const seg = 1000
+    const min = 60
+    const hora = 60
+    const dia = 24
+    const mes = 30
+    
+    let totalMeses = (new Date(dataSaida-dataEntrada).getTime()/seg/min/hora/dia/mes) // Contabiliza o amior < o menor
+            
+    return (totalMeses)
+}
+
+function data2str(data){
+//Converte o value do input em uma string dia/mes/ano
+    return ""+data[DEF_DIA] +"/"+ data[DEF_MES] +"/"+ data[DEF_ANO]
+}
+
+function calcular(){
+    //Pega Datas do input
+    let entrada = document.getElementById("inp").value.split("-");
+    let intEntrada = entrada.map(Number)
+    let saida = document.getElementById("out").value.split("-");
+    let intSaida = saida.map(Number)
+
+    if(valid(intEntrada,intSaida)){
+        let valor = parseInt(document.getElementById("val").value);
+        let taxa = parseFloat(document.getElementById("per").value);
+        let qtdMeses = Math.trunc(totalMeses(entrada,saida))+1
+        let strEntrada = data2str(intEntrada)
+        let strSaida = data2str(intSaida)
+        pagamentos = calcPrice (valor,qtdMeses,taxa/100)
+        print(pagamentos)
+    }
+
+}
+
+function truc(valor){
+//Trunca o valor para 2 casas decimais (referente aos centavos centavos)
+    return(Math.trunc(valor * 100)/100)
+}
+
+function createTable(pagamentos){
+    let html = "<table class='table'> <tr>Valor Base:"+pagamentos[0]['parcela']+"</tr>"
+    pagamentos.forEach(mes => {
+        html = html +"\
+        <tr>\
+            <td>Mes: "      +mes['mes']+    "</td>\
+            <td>Divida: R$" +mes['divida']+ "</td>\
+            <td>juros: R$"  +mes['juros']+  "</td>\
+            <td>amortizado: R$"+mes['amortizado']+"</td>\
+        </tr>"
+    });
+    html = html + "</table>"
+    return html
+}
+
+function geraURL(vetParametros){
+    url='whatsapp://send?text='
+    for(const txt of vetParametros) {
+        url += encodeURIComponent(txt);
+    }
+    return url
+}
+
+function print(pagamentos){
+//Reescreve a pagina                
+    URL_Conteudo_txt = ''
+    linha = (mes)=>{
+        return  "Mes: "+       mes['mes']        +"\t"+
+                "Divida: R$"+  mes['divida']     +"\t"+
+                "Juros: R$"+   mes['juros']      +"\t"+
+                "Amortizado: R$"+ mes['amortizado']    +"\t"+
+                "\n________________________________\n"
+    }
+
+    pagamentos.forEach(mes => {
+        URL_Conteudo_txt = URL_Conteudo_txt+linha(mes)
+    });
+    
+    TABLE_Conteudo = createTable(pagamentos)
+
+    SHARE_Whats = ""+
+        '<a href="'+geraURL([URL_Conteudo_txt])+'"><button>Compartilhar via Whats</button></a>'
+    
+    REFRESH_Pagina = ""+
+        '<button onclick="window.location.reload(1);">Recalcular</button></a>'
+
+    document.body.innerHTML=TABLE_Conteudo+SHARE_Whats+REFRESH_Pagina
+}
+
+        </script>
+    </head>
+
+    <body>
+        <table class='table'>
+            <tr>
+                <td>Entrada:</td><td> <input id="inp" type="date"  data-date-format="DD MMMM YYYY" ><br></td>
+            </tr><tr>
+                <td>Saida:</td><td> <input id="out" type="date"  data-date-format="DD MMMM YYYY" ><br></td>
+            </tr><tr>
+                <td>Valor:</td><td> <input id="val" type="number" placeholder="Valor do montante"><br></td>
+            </tr><tr>
+                <td>Taxa:</td><td> <input id="per" type="number" placeholder="Porcentagem"><brr></td>
+            </tr>
+        </table>
+        <input id="ok" type="button" value="Ok" onclick="calcular()">
+
+        <script type="text/javascript"> 
+            function dataToday(){
+                data = new Date(Date.now());//Data atual
+                ano = data.getFullYear()
+                mes = parseInt(data.getMonth()+1) <10 ? "0"+parseInt(data.getMonth()+1):parseInt(data.getMonth()+1)
+                dia = data.getDate()
+                strData = ""+ano+"-"+mes+"-"+dia //Parse Data
+                document.getElementById("inp").value = strData
+            }
+            dataToday()
+        </script>
+    </body>
+</html>
