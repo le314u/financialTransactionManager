@@ -10,7 +10,7 @@
     "googleapis": "^39.2.0"
   },
   "scripts": {
-    "postinstall": "install-app-deps",
+    "postinstall": "electron-builder install-app-deps",
     "test": "standard && node main.js",
     "start": "electron .",
     "standart": "standard --fix"
